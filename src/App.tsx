@@ -1,11 +1,7 @@
 import ChatFab from './components/ChatFab';
 
 function App() {
-  return (
-    <>
-      <ChatFab />
-    </>
-  );
+  return <ChatFab />
 }
 
 export default App;
