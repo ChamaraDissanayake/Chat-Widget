@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const CHAT_BASE_URL = "http://localhost:3000/api";
-// const CHAT_BASE_URL = "https://crmb.smartglobalhub.com/api";
+// const CHAT_BASE_URL = "http://localhost:3000/api";
+const CHAT_BASE_URL = "https://crmb.smartglobalhub.com/api";
 
 export interface ChatMessage {
     id: string;
@@ -17,7 +17,7 @@ export interface ChatHistoryResponse {
     createdAt: string;
 }
 
-// We'll read companyId dynamically from the global script
+// Declare the global config type
 declare global {
     interface Window {
         SMART_WIDGET_CONFIG?: {
@@ -27,7 +27,14 @@ declare global {
     }
 }
 
-const companyId = window.SMART_WIDGET_CONFIG?.companyId ?? "";
+// Always read companyId dynamically
+function getCompanyId(): string {
+    const id = window.SMART_WIDGET_CONFIG?.companyId;
+    if (!id) {
+        throw new Error("Company ID is not set in SMART_WIDGET_CONFIG.");
+    }
+    return id;
+}
 
 const ChatService = {
     createCustomerThread: async (
@@ -36,6 +43,7 @@ const ChatService = {
         email: string,
         phone: string
     ): Promise<string> => {
+        const companyId = getCompanyId();
         const response = await axios.post(`${CHAT_BASE_URL}/customer/create`, {
             customerId,
             companyId,
@@ -50,6 +58,7 @@ const ChatService = {
         threadId: string,
         message: string
     ): Promise<{ botResponse: string }> => {
+        const companyId = getCompanyId();
         const response = await axios.post(`${CHAT_BASE_URL}/chat/chat-web`, {
             threadId,
             companyId,
@@ -66,7 +75,6 @@ const ChatService = {
         const response = await axios.get(`${CHAT_BASE_URL}/chat/chat-history`, {
             params: { threadId, limit, offset },
         });
-        console.log('Chamara response');
 
         return response.data.map((msg: ChatHistoryResponse, index: number) => ({
             id: msg.id || String(index + 1),
