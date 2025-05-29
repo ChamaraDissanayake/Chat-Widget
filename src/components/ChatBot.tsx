@@ -26,7 +26,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
     const [phone, setPhone] = useState("");
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const typingGif = "/typing.gif";
+    const typingGif = "https://bot.smartglobalhub.com/typing.gif";
 
     // On first load, check localStorage for threadId
     useEffect(() => {
@@ -157,7 +157,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
                 {/* Chat header */}
                 <div className="flex items-center p-4 bg-blue-900 rounded-t-lg">
                     <img
-                        src="/bot.jpg"
+                        src={'https://bot.smartglobalhub.com/bot.jpg'}
                         alt="Profile"
                         className="w-10 h-10 mr-3 rounded-full"
                     />

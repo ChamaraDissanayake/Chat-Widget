@@ -13,7 +13,7 @@ const ChatFab: React.FC = () => {
                         onClick={() => setIsOpen(true)}
                         className="fixed bottom-4 right-4 px-4 py-2 bg-transparent"
                     >
-                        <img src='/chat.png' alt="Chat" className="w-12 h-12" />
+                        <img src={"https://bot.smartglobalhub.com/chat.png"} alt="Chat" className="w-12 h-12" />
                     </button>
                 )}
             </div>

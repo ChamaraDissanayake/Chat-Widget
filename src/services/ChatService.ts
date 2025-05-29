@@ -22,6 +22,7 @@ declare global {
     interface Window {
         SMART_WIDGET_CONFIG?: {
             companyId: string;
+            containerId?: string;
         };
     }
 }
