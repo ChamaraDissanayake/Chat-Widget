@@ -2,8 +2,8 @@
 import axios from "axios";
 import socket from "./helpers/socket";
 
-const CHAT_BASE_URL = "http://localhost:3000/api";
-// const CHAT_BASE_URL = "https://crmb.smartglobalhub.com/api";
+// const CHAT_BASE_URL = "http://localhost:3000/api";
+const CHAT_BASE_URL = "https://crmb.smartglobalhub.com/api";
 
 export interface ChatMessage {
     id: string;

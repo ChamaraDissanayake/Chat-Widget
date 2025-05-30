@@ -11,8 +11,8 @@ interface ClientToServerEvents {
 }
 
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-    // "https://crmb.smartglobalhub.com",
-    "http://localhost:3000",
+    "https://crmb.smartglobalhub.com",
+    // "http://localhost:3000",
     {
         path: "/socket.io",
         transports: ["websocket", "polling"],
