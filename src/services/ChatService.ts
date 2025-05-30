@@ -1,7 +1,9 @@
+// src/services/ChatService.ts
 import axios from "axios";
+import socket from "./helpers/socket";
 
-// const CHAT_BASE_URL = "http://localhost:3000/api";
-const CHAT_BASE_URL = "https://crmb.smartglobalhub.com/api";
+const CHAT_BASE_URL = "http://localhost:3000/api";
+// const CHAT_BASE_URL = "https://crmb.smartglobalhub.com/api";
 
 export interface ChatMessage {
     id: string;
@@ -17,7 +19,6 @@ export interface ChatHistoryResponse {
     createdAt: string;
 }
 
-// Declare the global config type
 declare global {
     interface Window {
         SMART_WIDGET_CONFIG?: {
@@ -27,7 +28,6 @@ declare global {
     }
 }
 
-// Always read companyId dynamically
 function getCompanyId(): string {
     const id = window.SMART_WIDGET_CONFIG?.companyId;
     if (!id) {
@@ -81,6 +81,35 @@ const ChatService = {
             text: msg.content,
             sender: msg.role,
         }));
+    },
+
+    connectToThread: (
+        threadId: string,
+        onMessage: (msg: ChatMessage) => void
+    ) => {
+        if (!socket.connected) {
+            socket.connect();
+        }
+        console.log('Chamara socket joining thread', threadId);
+
+        socket.emit("join-thread", threadId);
+
+        const handleNewMessage = (msg: ChatHistoryResponse) => {
+            console.log('Chamara msg', msg);
+
+            const message: ChatMessage = {
+                id: msg.id,
+                text: msg.content,
+                sender: msg.role,
+            };
+            onMessage(message);
+        };
+
+        socket.on("new-message", handleNewMessage);
+
+        return () => {
+            socket.off("new-message", handleNewMessage);
+        };
     },
 };
 
