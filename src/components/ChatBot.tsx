@@ -1,7 +1,6 @@
 //src/components/ChatBot.tsx
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import ChatService, { type ChatMessage } from "../services/ChatService";
-import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 
 interface ChatBotProps {
@@ -114,9 +113,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
 
     // Handle form submission
     const handleFormSubmit = async () => {
-        const newCustomerId = uuidv4();
         try {
-            const threadId = await ChatService.createCustomerThread(newCustomerId, name, email, phone);
+            const threadId = await ChatService.createCustomerThread(name, email, phone);
             localStorage.setItem("threadId", threadId);
             setThreadId(threadId);
             setShowForm(false);
@@ -140,37 +138,41 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
         setInputText("");
         setIsSending(true);
 
-        // Showing typing gif with a delay before sending the response
-        setTimeout(async () => {
-            const typingMessage: ChatMessage = {
-                id: "typing",
-                text: typingGif,
-                sender: "assistant",
-            };
+        try {
+            // ✅ Show typing gif if no assistant message has been added yet (via socket)
+            setTimeout(() => {
+                const lastMessage = messages[messages.length - 1];
+                const alreadyTyping = lastMessage?.id === "typing";
 
-            setMessages((prev) => [...prev, typingMessage]);
+                if (!alreadyTyping) {
+                    const typingMessage: ChatMessage = {
+                        id: "typing",
+                        text: typingGif,
+                        sender: "assistant",
+                    };
+                    setMessages((prev) => [...prev, typingMessage]);
+                }
+            }, 3000);
 
-            try {
-                await ChatService.sendChatMessage(threadId, userMessage.text);
-                // const response = await ChatService.sendChatMessage(threadId, userMessage.text);
+            const data = await ChatService.sendChatMessage(threadId, userMessage.text);
 
-                // setMessages((prev) =>
-                //     prev.map((msg) =>
-                //         msg.id === "typing"
-                //             ? {
-                //                 id: String(prev.length + 1),
-                //                 text: response.botResponse,
-                //                 sender: "assistant",
-                //             }
-                //             : msg
-                //     )
-                // );
-            } catch (error) {
-                console.error("Failed to send message:", error);
-            } finally {
-                setIsSending(false);
+            if (data.botResponse === "AGENT") {
+                console.log("Agent response detected, no further action needed.");
+
+                setTimeout(() => {
+                    // Remove the "typing" message if it exists
+                    setMessages((prev) => {
+                        return prev.filter((m) => m.id !== "typing");
+                    });
+                }, 3000);
             }
-        }, 3000); // 3 second delay before showing typing gif and sending response
+
+
+        } catch (error) {
+            console.error("Failed to send message:", error);
+        } finally {
+            setIsSending(false);
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
