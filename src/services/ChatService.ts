@@ -49,7 +49,7 @@ const ChatService = {
             name,
             email,
             phone,
-            channel
+            channel,
         });
         return response.data.threadId;
     },
@@ -87,12 +87,22 @@ const ChatService = {
         threadId: string,
         onMessage: (msg: ChatMessage) => void
     ) => {
-        if (!socket.connected) {
-            socket.connect();
-        }
-        console.log('Chamara socket joining thread', threadId);
+        let lastJoin = 0;
 
-        socket.emit("join-thread", threadId);
+        const connectAndJoin = () => {
+            const now = Date.now();
+            if (now - lastJoin < 2000) return; // avoid rapid reconnects
+            lastJoin = now;
+
+            if (!socket.connected) {
+                socket.connect();
+            }
+
+            console.log("Joining thread:", threadId);
+            socket.emit("join-thread", threadId);
+        };
+
+        connectAndJoin();
 
         const handleNewMessage = (msg: ChatHistoryResponse) => {
             const message: ChatMessage = {
@@ -103,10 +113,32 @@ const ChatService = {
             onMessage(message);
         };
 
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible" && !socket.connected) {
+                console.info("Tab became active. Reconnecting...");
+                connectAndJoin();
+            }
+        };
+
+        const reconnectHandler = () => {
+            console.info("Reconnected. Rejoining thread.");
+            socket.emit("join-thread", threadId);
+        };
+
+        const disconnectHandler = (reason: string) => {
+            console.warn("Socket disconnected:", reason);
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
         socket.on("new-message", handleNewMessage);
+        socket.on("disconnect", disconnectHandler);
+        socket.io.on("reconnect", reconnectHandler);
 
         return () => {
             socket.off("new-message", handleNewMessage);
+            socket.off("disconnect", disconnectHandler);
+            socket.io.off("reconnect", reconnectHandler);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
     },
 };
