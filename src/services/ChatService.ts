@@ -1,6 +1,6 @@
 // src/services/ChatService.ts
 import axios from "axios";
-import socket from "./helpers/socket";
+import socket from "./helpers/Socket";
 
 // const CHAT_BASE_URL = "http://localhost:3000/api";
 const CHAT_BASE_URL = "https://crmb.smartglobalhub.com/api";
