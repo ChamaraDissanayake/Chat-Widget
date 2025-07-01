@@ -19,6 +19,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 1000,
+        timeout: 5000,
     }
 );
 
